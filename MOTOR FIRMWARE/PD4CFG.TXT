@@ -1,0 +1,39 @@
+;This file allows to adjust object dictionary parameters
+;Note: max. filesize is 4k - comments must start with semicolon
+;
+;USB has to be disconnected and PD4C has to be power cycled after 
+;this file has been modified!
+;
+;----------------------------------------------------------------
+
+;to demonstarte how a dip switch can set values conditionally
+2037=500
+#1:2037=700
+
+;Multipliers/Divider for clock direction (512 = full step, 256=half step, etc)
+2057=128
+2058=1
+
+;enable closed loop
+;3202=1
+
+;set speed range for analog input (use 1mV input range and scale to 150RPM)
+;604C:01=15
+;604C:02=6000
+
+;this would scale from 0-5RPM
+;604C:01=1
+;604C:02=12000
+
+;direction (0x40 = CCW, 0 = CW)
+;607E=0x40
+
+;this enables current reduction:
+;3202=8
+2037=500
+
+;when dd4c is set to 1, DIP switches are ignored, no built in task takes control
+;dd4c=0
+
+;max current
+2031=3000

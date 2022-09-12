@@ -1,0 +1,260 @@
+// In this NanoJ program, we will make the motor turn shortly back and forth.
+// The language used for NanoJ programs is C, with a few specific extensions,
+// like the mappings (see below).
+// Please refer to the product manual for more details about NanoJ and the
+// object dictionary.
+
+// You can map frequently used objects to be able to read or write them
+// using In.* and Out.*. Here we map the object 6041:00 as "In.StatusWord".
+
+// Minimum required mapping for nanotec.h
+map U16 Controlword as inout 0x6040:00
+map U16 Statusword as input 0x6041:00
+map U32 Inputs as input 0x60FD:00
+map U32 Outputs as inout 0x60FE:01
+map S08 ModesOfOperation as output 0x6060:00
+map S08 ModesOfOperationDisplay as input 0x6061:00
+map S16 AnalogInput as input 0x3220:01
+map S16 TargetVelocity as output 0x6042:00  
+map S32 ProfileVelocity as output 0x60FF:00   
+ // Example shows register 6042 - vl Target Velocity (USER DEFINED UNITS)
+ // Example shows register 60FF -  Target Velocity/Profile Velocity WHAT IS THE DIFFERENCE?? WHO KNOWS
+// Additional Mapping Added given examples
+
+
+int analogValue;
+
+long buttonState;
+
+bool direction;   // when true, operation clockwise
+bool stop;        // when true, motor stops and program ends. acts as emergency stop. Cycle Power to reset
+
+int motorRatedCurrent;   // This will give the absolute value that everything else is calculated as a percentage of
+
+long currentA;
+long currentB;
+long currentD;
+long currentQ;
+
+long A;   // For doing maths on individual current readings
+long B;
+long D;
+long Q;
+
+long i; //
+long j;  // Hold the max current from either a or b & d or q - these might need to swap after i.e. a and d or b and q
+
+//long coilCurrent[4];
+
+long U;   // For doing maths on current
+
+long T;  // torque actual value
+
+
+
+// Include the definition of NanoJ functions and symbols
+#include "wrapper.h"
+#include "nanotec.h"
+
+
+
+// The user() function is the entry point of the NanoJ program. It is called
+// by the firmware of the controller when the NanoJ program is started.
+void user(){
+	
+// SETUP FUNCTIONS
+	sleep(2000);   // Pause on power on
+	// Set mode "Profile velocity"
+	Out.ModesOfOperation = 3;
+	//od_write(0x6060, 0x00, 3);  // Why was this a 3? I dont know cant find reference to it anywhere maybe difference between profile and target velocity
+		
+
+	// Set the target velocity to 0	
+	Out.ProfileVelocity = 0;
+	//od_write(0x60FF, 0x00, 0);	
+	yield();
+	
+ 	// Request state "Ready to switch on" OR "ENABLE VOLTAGE"
+ 	InOut.Controlword = 0x6;
+	//od_write(0x6040, 0x00, 0x6);
+	// Wait until the requested state is reached
+	do {
+		yield();
+		}
+		while ( (In.Statusword & 0xEF) != 0x21);
+		//// checking the statusword (0x6041) for the bitmask: xxxx xxxx x01x 0001
+
+	// Request the state "Switched on"
+	InOut.Controlword = 0x7;				// switch to the "switched on" state
+	//od_write(0x6040, 0x00, 0x7);
+	// Wait until the requested state is reached
+	do {
+		yield();
+	} while ( (In.Statusword & 0xEF) != 0x23);
+	// checking the statusword (0x6041) for the bitmask: xxxx xxxx x01x 0011
+	
+	
+//Test Functions: Spin the motor to show software is working - Comment out for deployment
+
+	/*
+	// Write a small value to the target velocity
+	Out.ProfileVelocity = 50;
+	yield();
+		// Request the state "Operation enabled"
+	InOut.Controlword = 0xF;				// switch to the "enable operation" state and starts the velocity mode
+	// Wait until the requested state is reached
+	do {
+	yield();
+	}
+	while ( (In.Statusword & 0xEF) != 0x27); 
+	// checking the statusword (0x6041) for the bitmask: xxxx xxxx x01x 0111
+	
+	sleep(500);
+	
+	// Write a small value to the target velocity
+	Out.ProfileVelocity = -50;
+	
+	yield();
+	sleep(500);
+	// Set the motor back to "Switched On" i.e. ready but not active
+	InOut.Controlword = 0x7;				// switch to the "switched on" state
+	do {
+		yield();
+	} while ( (In.Statusword & 0xEF) != 0x23);
+	// Reset Target velocity to 0
+	Out.ProfileVelocity = 0;
+	yield();
+	*/
+	
+	
+	// Do some maths for calculating current draws
+	motorRatedCurrent = od_read(0x2031, 0x00);
+	
+	
+
+// LOOP FUNCTIONS
+
+	//while (1){   // Loop for infiniate looping
+	//Loop for control with stop button
+	stop = false;
+	while(stop != true){
+		
+		// Check the stop Button
+		if(DigitalInput(3)){
+			stop = true;
+		}
+			
+		
+		
+	// Read the current I values	
+		A = od_read(0x2039,0x03);
+		B = od_read(0x2039,0x04);
+		T = od_read(0x6077, 0x00);   // Torque actual value...useful? Nope
+		
+		
+		//D = od_read(0x2039,0x01);   // Seem to not read much
+		//Q = od_read(0x2039,0x02);   // Seem to not read much
+		
+	// Get the absolute values of each  - Maybe we should just ignore negative values instead?
+		A = ((A<0)?-A:A);
+		B = ((B<0)?-B:B);
+		
+		// Write Values into registers 03 - 06 for detection by oscilloscope
+		od_write(0x2500, 0x03, A);
+		od_write(0x2500, 0x04, B);
+		//od_write(0x2500, 0x05, D);
+		//od_write(0x2500, 0x06, Q);
+		
+		// Find out the larger values and return them - Maybe?
+		U = (A >= B) ? A : B;
+		//j = (D >= B) ? D: B;
+
+
+		// Add the currents together?
+		// Just take the biggest current?
+		
+		//U = (i >= j) ? i:j;
+		// Get the absolute value of the sum of the currents.
+	//	U = ((U<0)?-U:U);
+		// Write value into register for oscilloscope // Ignore for now dont understand math
+		od_write(0x2500, 0x02, T);
+		yield();
+		
+	
+	
+	//Read Digital direction input
+		if (DigitalInput(5)){
+		direction = false;
+		} else {
+		direction = true;
+		}
+	
+	//Read the Analog Input	
+		//analogValue = od_read(0x3320, 0x01);     // Returns a value from -500 to -1500
+		analogValue = In.AnalogInput;              // Returns a value from 0 to 1000
+	// Scale the Analog Value
+		//analogValue = analogValue + 1000;        // Now has range of -500 to 500	
+		if (direction == true){                     
+			analogValue = analogValue;              // Scales based on direction input
+		} else {
+			analogValue = analogValue*-1;
+		}
+		
+		analogValue = analogValue/10;			// Now has range of 0 to 100, same operation as before
+		
+		//analogValue = analogValue - 100;           // Rescales for joystick operation, remove if direction input used
+	//Write the analog value to a register to be read by the software
+		od_write(0x2500, 0x01, analogValue);
+
+	// Write the scaled analog value to the target velocity
+		Out.ProfileVelocity = analogValue;
+		//od_write(0x60FF, 0x00, analogValue);
+		yield();
+	
+	// Sample the Digital Inputs
+		//buttonState = od_read(0x60FD, 0x00);
+		//VmmDebugOutputInt(enableState);
+	// Save value to register for oscilloscope?
+		
+		
+	// If enable pin has been pressed
+		//if (buttonState == 524288){
+		if (DigitalInput(4)){
+	// Request the state "Operation enabled"
+	// Request the state "Operation enabled"
+			InOut.Controlword = 0xF;	
+			//od_write(0x6040, 0x00, 0xF);
+	// Wait until the requested state is reached
+			while ( (In.Statusword & 0xEF) != 0x27) {
+				yield();
+			}
+		} else {
+		// Request the state "Switched on" - I.E Stop the motor but dont "STOP" the motor
+			// Request the state "Operation enabled"
+			InOut.Controlword = 0x7;	
+			//od_write(0x6040, 0x00, 0x7);
+			// Wait until the requested state is reached
+			while ( (In.Statusword & 0xEF) != 0x23) {
+				yield();
+				}
+		}
+		yield();		
+	}
+	
+// EXIT CASE
+	// Stop the motor
+	Halt(true);
+	// Request state "Ready to switch on" OR "ENABLE VOLTAGE"
+ 	InOut.Controlword = 0x0; 	
+	//od_write(0x6040, 0x00, 0x0);	
+	do {
+		yield();
+		}
+		while ( (In.Statusword & 0xEF) != 0x00);
+		//// checking the statusword (0x6041) for the bitmask: xxxx xxxx x00x 0000
+	
+	
+	// Stop the NanoJ program. Without this line, the firmware would
+	// call user() again as soon as we return.
+	od_write(0x2300, 0x00, 0x0);
+}
