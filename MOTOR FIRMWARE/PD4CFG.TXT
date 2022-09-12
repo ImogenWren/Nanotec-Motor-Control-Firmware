@@ -37,3 +37,15 @@
 
 ;max current
 2031=3000
+
+;This didnt work
+;Set bit 20 of object 2102h:00 enabling virtual com port
+;2102|=0x100000
+;Deactivate internal program for controlling the state machine
+;4015:01=0
+
+;different quick start guide showed this:
+2102:00=0x190001
+;Deactivate the DIP switches = 1
+dd4c=1
+
