@@ -55,4 +55,4 @@ Options needed
 |---				|---					|---	|---		|---		|---		|---	|
 |Torque Actual Value|						|6077	| 00		| 0			| 1000		|		|
 |NanoJ Output #2	|Torque Percent (User)	|2500	| 02		| 0			| 100		|		|
-|NanoJ Output #1	|Analog Input (Speed)	|2500	| 02		| 0			| 100		|		|
+|NanoJ Output #1	|Analog Input (Speed)	|2500	| 01		| 0			| 100		|		|
