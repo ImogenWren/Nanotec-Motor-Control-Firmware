@@ -40,3 +40,19 @@ Contains a copy of the last WORKING built file for Motor Controller. Revert to t
 ## NanoJ Programs folder
 
 Contains uncompiled programs and libraries for NanoJ Motor Controllers
+
+
+# Interfacing with the Motor 
+
+Options for getting values out of the object dictionary during runtime
+
+fieldbus?
+
+Options needed
+
+
+| Object 			|Use					| Index | Sub-Index | Range_min | Range_max | Value |
+|---				|---					|---	|---		|---		|---		|---	|
+|Torque Actual Value|						|6077	| 00		| 0			| 1000		|		|
+|NanoJ Output #2	|Torque Percent (User)	|2500	| 02		| 0			| 100		|		|
+|NanoJ Output #1	|Analog Input (Speed)	|2500	| 02		| 0			| 100		|		|
