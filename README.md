@@ -51,8 +51,9 @@ fieldbus?
 Options needed
 
 
-| Object 			|Use					| Index | Sub-Index | Range_min | Range_max | Value |
-|---				|---					|---	|---		|---		|---		|---	|
+| Object 			|Use					| Index | Sub-Index | Range_min | Range_max | Value |Data Size (Byte)|
+|---				|---					|---	|---		|---		|---		|---	|---
 |Torque Actual Value|						|6077	| 00		| 0			| 1000		|		|
 |NanoJ Output #2	|Torque Percent (User)	|2500	| 02		| 0			| 100		|		|
 |NanoJ Output #1	|Analog Input (Speed)	|2500	| 01		| 0			| 100		|		|
+|Max Motor Current  | 						|2031	| 00 		|			|			|		|				|
