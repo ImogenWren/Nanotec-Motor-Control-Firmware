@@ -1,0 +1,35 @@
+Depreciated Code Snippits from NanoJ program
+
+
+	// Get the absolute values of each  - Maybe we should just ignore negative values instead?
+		//A = ((A<0)?-A:A);
+		//B = ((B<0)?-B:B);
+		
+		// Write Values into registers 03 - 06 for detection by oscilloscope
+		//od_write(0x2500, 0x03, A);
+	//	od_write(0x2500, 0x04, B);
+		//yield();
+		//od_write(0x2500, 0x05, D);
+		//od_write(0x2500, 0x06, Q);
+		
+		// Find out the larger values and return them - Maybe?
+	//	U = (A >= B) ? A : B;
+		//j = (D >= B) ? D: B;
+
+
+		// Add the currents together?
+		// Just take the biggest current?
+		
+		//U = (i >= j) ? i:j;
+		// Get the absolute value of the sum of the currents.
+	//	U = ((U<0)?-U:U);
+
+
+
+
+	
+	// Sample the Digital Inputs
+		//buttonState = od_read(0x60FD, 0x00);
+		//VmmDebugOutputInt(enableState);
+	// Save value to register for oscilloscope?
+		
